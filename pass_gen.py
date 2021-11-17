@@ -29,6 +29,26 @@ def insert_num_in_pass(pass_string, num_of_nums):
     return password
 
 
+def get_symbols():
+    """Return an array of symbols reading them from the symbol.txt file
+
+        INPUT: NONE
+
+        OUTPUT: list. The list with symbols from the symbol.txt file
+    """
+    symbols = []
+
+    # Read data from the symbol's txt file
+    with open("symbols.txt") as f:
+        # In each line there is symbol
+        for line in f:
+            symbol = line.strip()
+            # Add the symbol to the symbols list
+            symbols.append(symbol)
+
+    return symbols
+
+
 def insert_symbols_in_pass(pass_string, num_of_symbols):
     """Insert random symbols at random indices
 
@@ -39,15 +59,8 @@ def insert_symbols_in_pass(pass_string, num_of_symbols):
         OUTPUT: string. The string with symbols inserted into it
     """
     password = pass_string
-    symbols = []
-
-    # Read data from the symbol's txt file
-    with open("symbols.txt") as f:
-        # In each line there is symbol
-        for line in f:
-            symbol = line.strip()
-            # Add the symbol to the symbols list
-            symbols.append(symbol)
+    # Get symbols
+    symbols = get_symbols()
 
     # Insert num_of_nums symbols
     for i in range(num_of_symbols):
@@ -59,17 +72,14 @@ def insert_symbols_in_pass(pass_string, num_of_symbols):
     return password
 
 
-def gen_and_save_pass(words):
+def get_pass_if_already_exists(words):
     """Read data from the file 'password_and_words.txt'.
         If the words the user has given are already saved in the file:
             return the passwords that corresponds with the words in the file.
 
-        Else:
-            generate two password (one with letters and numbers and another with letters, numbers and symbols),
-            save them in the file 'password_and_words.txt' and return them.
-
-        INPUT: list - words to be used to generate the passwords
-        OUTPUT: tuple - if found, previous passwords generated for the words given, else newly generated passwords
+        INPUT: words --> list. words to be used to generate the passwords
+        OUTPUT: tuple --> if found: previous passwords generated for the words given.
+                          else: an empty tuple
     """
     # Read the 'password_and_words.txt' file
     with open("password_and_words.txt") as f:
@@ -79,10 +89,52 @@ def gen_and_save_pass(words):
             # String to list of words
             word_list = user_words.split(" ")
             # If the list matches
+            print(word_list, words)
             if word_list == words:
                 # Read the passwords generated previously
                 passwords = line.split(": ")[1].strip().split(" , ")
                 return (passwords[0], passwords[1])
+
+        return ()
+
+
+def save_pass(words, medium_password, strong_password):
+    """Save passwords along with the words used to generate the passwords to the password_and_words.txt
+
+        INPUT:
+            words --> list. Words the user has inputted and have been used to generated the passwords
+            medium_password --> string. A password generated randomly from the words the user has inputted and with
+                                        random numbers at random indices
+            strong_password -->
+
+        OUTPUT: string. The string with symbols inserted into it
+    """
+    words_string = ""
+    for word in words:
+        # Add words to the words_string getting rid of blank spaces in the word
+        words_string = words_string + word + " "
+    with open("password_and_words.txt", "a") as f:
+        # Write the words_string in the file getting rid of the last blank_space, add a colon and
+        # after that add the two passwords seperated by " , " and then end the line
+        f.write(words_string.strip() + ": " +
+                medium_password + " , " + strong_password + "\n")
+
+
+def gen_and_save_pass(words):
+    """If the words the user has given are already saved in the file:
+            return the passwords that corresponds with the words in the file.
+
+        Else:
+            generate two password (one with letters and numbers and another with letters, numbers and symbols),
+            save them in the file 'password_and_words.txt' and return them.
+
+        INPUT: words --> list. words to be used to generate the passwords
+        OUTPUT: tuple - if found, previous passwords generated for the words given, else newly generated passwords
+    """
+
+    old_pass = get_pass_if_already_exists(words)
+    if old_pass != ():
+        return old_pass
 
     # Shuffle the words given getting rid of any blank spaces in them
     shuffled_words = ''.join(rd.sample(words, len(words))).replace(" ", "")
@@ -120,31 +172,8 @@ def ask_user_words():
     return words
 
 
-def save_pass(words, medium_password, strong_password):
-    """Save passwords along with the words used to generate the passwords to the password_and_words.txt
-
-        INPUT:
-            words --> list. Words the user has inputted and have been used to generated the passwords
-            medium_password --> string. A password generated randomly from the words the user has inputted and with
-                                        random numbers at random indices
-            strong_password -->
-
-        OUTPUT: string. The string with symbols inserted into it
-    """
-    words_string = ""
-    for word in words:
-        # Add words to the words_string getting rid of blank spaces in the word
-        words_string = words_string + word + " "
-    with open("password_and_words.txt", "a") as f:
-        # Write the words_string in the file getting rid of the last blank_space, add a colon and
-        # after that add the two passwords seperated by " , " and then end the line
-        f.write(words_string.strip() + ": " +
-                medium_password + " , " + strong_password + "\n")
-
-
 def main():
-    """The main function of the program. Run automatically if the main file is run.
-        Don't run if is imported in other files.
+    """The main function of the program.
     """
     # Will ask the user for words to make two passwords
     words = ask_user_words()
@@ -157,5 +186,7 @@ def main():
     print("Your strong password is", strong_password)
 
 
+# Run the main function if the main file is run.
+# Don't run the main function if is imported in other files.
 if __name__ == "__main__":
     main()
